@@ -4,7 +4,7 @@ module Form exposing
     , field
     , Context
     , Errors, errorsForField
-    , renderHtml, renderStyledHtml
+    , renderHtml, renderStyledHtml, renderStyledHtmlWithNonce
     , Options, options
     , withInput, withAction, withOnSubmit, withServerResponse
     , withGetMethod
@@ -176,7 +176,7 @@ to render the fields themselves, the rendering for everything besides the fields
 
 ## Rendering Forms
 
-@docs renderHtml, renderStyledHtml
+@docs renderHtml, renderStyledHtml, renderStyledHtmlWithNonce
 
 
 ## Render Options
@@ -1083,6 +1083,32 @@ renderStyledHtml :
     -> Html.Styled.Html mappedMsg
 renderStyledHtml state options_ attrs form_ =
     Html.Styled.Lazy.lazy4 renderStyledHelper state options_ attrs form_
+
+
+{-| Same as `renderStyledHtml` but accepts a
+[nonce](https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP#nonces) to pass to
+the generated `<style>` tag
+-}
+renderStyledHtmlWithNonce :
+    String
+    ->
+        { submitting : Bool
+        , state : Model
+        , toMsg : Msg mappedMsg -> mappedMsg
+        }
+    -> Options error parsed input mappedMsg extras
+    -> List (Html.Styled.Attribute mappedMsg)
+    ->
+        Form
+            error
+            { combine : Validation error parsed field constraints
+            , view : Context error input -> List (Html.Styled.Html mappedMsg)
+            }
+            parsed
+            input
+    -> Html.Styled.Html mappedMsg
+renderStyledHtmlWithNonce nonce state options_ attrs form_ =
+    Html.Styled.Lazy.lazy4WithNonce nonce renderStyledHelper state options_ attrs form_
 
 
 {-| The `persisted` state will be ignored if the client already has a form state. It is useful for persisting state between page loads. For example, `elm-pages` server-rendered routes
